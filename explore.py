@@ -126,6 +126,7 @@ print("-------------------------------------------------------------------------
 
 # This shows the number of listings per host
 # https://docs.mongodb.com/manual/aggregation/
+
 print("\nNumber of listings per host:\n")
 listings_per_host = collection1.aggregate([
     {
@@ -190,6 +191,3 @@ for result in avg_review_scores:
     neighbourhood = result.get("_id", "Unknown")
     avg_rating = result.get("avg_rating")
     print(f"{neighbourhood}: Average Rating = {avg_rating:.2f}")
-
-
-
