@@ -75,4 +75,80 @@ results = collection1.find({"host_id": {"$in": host_ids}})
 with open("query3.txt", "w", encoding="utf-8") as p:
     for r in results:
         p.write(pprint.pformat(r) + "\n\n")
+print("---------------------------------------------------------------------------------------")
+
+# Find all unique host_name values
+# https://docs.mongodb.com/manual/reference/method/db.collection.distinct/
+
+unique_hosts = collection1.distinct("host_name")
+print(f"Total unique host names: {len(unique_hosts)}\n")
+for host in unique_hosts:
+    print(host)
+
+print("---------------------------------------------------------------------------------------")
+
+# Find all places with more than 2 beds in Chamartín neighbourhood, ordered by review_scores_rating descending
+# https://docs.mongodb.com/manual/reference/method/db.collection.find/
+
+neighbourhood = "Chamartín"
+
+results = collection1.find(
+    {
+        "bedrooms": {"$gt": 2},
+        "neighbourhood_group_cleansed": neighbourhood,
+        "review_scores_rating": {"$ne": None}
+    }
+).sort("review_scores_rating", -1)
+
+print(f"\nPlaces with more than 2 beds in {neighbourhood}, ordered by review score \n")
+for place in results:
+    review_score = place.get('review_scores_rating')
+    
+    # Skip if review_score is None or can't be converted to a valid number
+    if review_score is None:
+        continue
+    
+    try:
+        review_score = float(review_score)
+        # Skip if NaN
+        if review_score != review_score:
+            continue
+    except:
+        continue
+    
+    print(f" Name: {place.get('name')}")
+    print(f"    Review Score: {review_score}")
+    print(f"    Bedrooms: {place.get('bedrooms')}")
+    print(f"    Host: {place.get('host_name')}")
+    print(f"    Price: {place.get('price')}")
+
+print("---------------------------------------------------------------------------------------")
+
+# This shows the number of listings per host
+# https://docs.mongodb.com/manual/aggregation/
+print("\nNumber of listings per host:\n")
+listings_per_host = collection1.aggregate([
+    {
+        "$group": {
+            "_id": "$host_name",
+            "listing_count": {"$sum": 1}
+        }
+    },
+    {
+        "$sort": {"listing_count": -1}
+    }
+])
+
+for result in listings_per_host:
+    host_name = result.get("_id", "Unknown")
+    count = result.get("listing_count")
+    print(f"{host_name}: {count} listings")
+
+
+print("---------------------------------------------------------------------------------------")
+
+# This shows the neighbourhoods with the average review scores of 95 or higher.
+#TODO
+
+
 
