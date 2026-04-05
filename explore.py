@@ -19,7 +19,7 @@ collection1 = database["listings"]
 print(collection1.count_documents({}))
 
 # This loads the AirBNB CSV file
-file = pd.read_csv("data/listings.csv")
+file = pd.read_csv("DB2-A3/data/listings.csv")
 
 print("---------------------------------------------------------------------------------------")
 
