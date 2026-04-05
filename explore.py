@@ -148,7 +148,48 @@ for result in listings_per_host:
 print("---------------------------------------------------------------------------------------")
 
 # This shows the neighbourhoods with the average review scores of 95 or higher.
-#TODO
+# https://docs.mongodb.com/manual/aggregation/
+
+print("\nNeighbourhoods with an average review score of 95 or higher:\n")
+
+avg_review_scores = collection1.aggregate([
+    # Filter out listings with missing or null review scores
+    {
+        "$match": {
+            "review_scores_rating": {"$ne": None}
+        }
+    },
+    # Convert review_scores_rating to a number (CSV imports are strings)
+    {
+        "$addFields": {
+            "review_scores_rating": {
+                "$toDouble": "$review_scores_rating"
+            }
+        }
+    },
+    # Group by neighbourhood and compute average
+    {
+        "$group": {
+            "_id": "$neighbourhood_group_cleansed",
+            "avg_rating": {"$avg": "$review_scores_rating"}
+        }
+    },
+    # Keep only neighbourhoods with avg >= 95
+    {
+        "$match": {
+            "avg_rating": {"$gte": 95}
+        }
+    },
+    # Sort highest → lowest
+    {
+        "$sort": {"avg_rating": -1}
+    }
+])
+
+for result in avg_review_scores:
+    neighbourhood = result.get("_id", "Unknown")
+    avg_rating = result.get("avg_rating")
+    print(f"{neighbourhood}: Average Rating = {avg_rating:.2f}")
 
 
 
