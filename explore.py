@@ -1,16 +1,19 @@
 # This shows the actual location of the assignment file if you 
 # are having trouble with your file locations during setup
+# https://www.w3schools.com/python/ref_os_getcwd.asp
 import os
 print(os.getcwd())
 
 print("---------------------------------------------------------------------------------------")
 
 # This loads MongoDB and Pandas
+# https://www.mongodb.com/resources/languages/python
 from pymongo import MongoClient
 import pprint
 import pandas as pd
 
 # This connects to MongoDB
+# https://www.w3schools.com/python/python_mongodb_create_db.asp
 client = MongoClient("mongodb://localhost:27017/")
 database = client["airbnb"]
 collection1 = database["listings"]
@@ -19,7 +22,14 @@ collection1 = database["listings"]
 print(collection1.count_documents({}))
 
 # This loads the AirBNB CSV file
-file = pd.read_csv("DB2-A3/data/listings.csv")
+# file = pd.read_csv("DB2-A3/data/listings.csv")
+
+# This ensures filepath is correct no matter who is working on file
+# https://www.geeksforgeeks.org/python/python-os-path-join-method/
+base_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(base_dir, "data", "listings.csv")
+
+file = pd.read_csv(file_path)
 
 print("---------------------------------------------------------------------------------------")
 
@@ -39,9 +49,11 @@ print(file.info())
 print("---------------------------------------------------------------------------------------")
 
 # This converts the file to a dictionary
+# https://www.geeksforgeeks.org/python/pandas-dataframe-to_dict/
 data = file.to_dict(orient="records")
 
 # This inserts into MongoDB if the data isn't there already
+# https://www.mongodb.com/docs/manual/core/transactions-operations/
 if collection1.count_documents({}) == 0:
     collection1.insert_many(data)
     print("Data has been inserted!")
@@ -70,6 +82,7 @@ superhosts = list(collection1.find({"host_is_superhost": "t"}).limit(2))
 # This loops through superhosts and returns host_id
 host_ids = [host["host_id"] for host in superhosts]
 # This uses a MongoDB operator "$in" to find all results where host_id is a superhost
+# https://www.mongodb.com/docs/manual/reference/operator/query/in/
 results = collection1.find({"host_id": {"$in": host_ids}})
 # This outputs to a text file using pprint()
 with open("query3.txt", "w", encoding="utf-8") as p:
