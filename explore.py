@@ -164,7 +164,7 @@ print("-------------------------------------------------------------------------
 # This shows the neighbourhoods with the average review scores of 95 or higher.
 # https://docs.mongodb.com/manual/aggregation/
 
-print("\nNeighbourhoods with an average review score of 95 or higher:\n")
+print("\n\033[1m\033[4m" + "Neighbourhoods with an average review score of 95 or higher:\033[0m\n")
 
 avg_review_scores = collection1.aggregate([
     # Filter out listings with missing or null review scores
@@ -176,22 +176,33 @@ avg_review_scores = collection1.aggregate([
     # Convert review_scores_rating to a number (CSV imports are strings)
     {
         "$addFields": {
-            "review_scores_rating": {
-                "$toDouble": "$review_scores_rating"
+            "rating_num": {
+                "$cond": [
+                    {"$eq": [{"$type": "$review_scores_rating"}, "double"]},
+                    "$review_scores_rating",
+                    {
+                        "$convert": {
+                            "input": "$review_scores_rating",
+                            "to": "double",
+                            "onError": 0,
+                            "onNull": 0
+                        }
+                    }
+                ]
             }
+        }
+    },
+   # Filter out records where conversion resulted in 0
+    {
+        "$match": {
+            "rating_num": {"$gt": 0}
         }
     },
     # Group by neighbourhood and compute average
     {
         "$group": {
             "_id": "$neighbourhood_group_cleansed",
-            "avg_rating": {"$avg": "$review_scores_rating"}
-        }
-    },
-    # Keep only neighbourhoods with avg >= 95
-    {
-        "$match": {
-            "avg_rating": {"$gte": 95}
+            "avg_rating": {"$avg": "$rating_num"}
         }
     },
     # Sort highest → lowest
@@ -203,4 +214,5 @@ avg_review_scores = collection1.aggregate([
 for result in avg_review_scores:
     neighbourhood = result.get("_id", "Unknown")
     avg_rating = result.get("avg_rating")
-    print(f"{neighbourhood}: Average Rating = {avg_rating:.2f}")
+    if avg_rating >= 95:
+        print(f"\t{neighbourhood}: Average Rating = {avg_rating:.2f}")
