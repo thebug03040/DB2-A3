@@ -1,4 +1,5 @@
-import csv 
+import csv
+import os
 
 def mapper_regions(filename):
     mapped=[]
@@ -41,7 +42,10 @@ def reduce_sum(grouped):
 
 
 def total_sales_per_region():
-    mapped = mapper_regions("data/transactions.csv")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(base_dir, "data", "transactions.csv")
+
+    mapped = mapper_regions(file_path)
     grouped = shuffle(mapped)
     reduced = reduce_sum(grouped)
 
@@ -79,7 +83,10 @@ def mapper_products(filename):
 
 
 def top_products_by_revenue():
-    mapped = mapper_products("data/transactions.csv") # Map Phase
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(base_dir, "data", "transactions.csv")
+
+    mapped = mapper_products(file_path) # Map Phase
     grouped = shuffle(mapped)                         # Shuffle Phase
     reduced = reduce_sum(grouped)                     # Reduce Phase
 
